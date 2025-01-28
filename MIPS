@@ -1,0 +1,478 @@
+#                                           CS 240, Lab #4
+# 
+#                                          IMPORTATNT NOTES:
+# 
+#                       Write your assembly code only in the marked blocks.
+# 
+#                       DO NOT change anything outside the marked blocks.
+# 
+#
+j main
+###############################################################################
+#                           Data Section
+.data
+
+# 
+# Fill in your name, student ID in the designated sections.
+# 
+student_name: .asciiz "Liam Hayes"
+student_id: .asciiz "827393886"
+
+new_line: .asciiz "\n"
+space: .asciiz " "
+
+
+t1_str: .asciiz "Testing GCD: \n"
+t2_str: .asciiz "Testing LCM: \n"
+t3_str: .asciiz "Testing RANDOM SUM: \n"
+
+po_str: .asciiz "Obtained output: " 
+eo_str: .asciiz "Expected output: "
+
+#GCD_test_data_A:	.word 1, 2, 128, 148, 36, 360, 108, 75, 28300, 0
+#GCD_test_data_B:	.word 12, 12, 96, 36, 54, 210, 144, 28300, 74000, 143
+
+GCD_test_data_A:	.word 1, 36, 360, 108, 28300
+GCD_test_data_B:	.word 12,54, 210, 144, 74000
+
+GCD_output:           .word 1, 18, 30, 36, 100
+
+#LCM_test_data_A:	.word 0, 1, 2, 128, 148, 36, 360, 108, 75, 28300
+#LCM_test_data_B:	.word 143, 12, 12, 96, 36, 54, 210, 144, 28300, 74000
+#LCM_output:           .word 0, 12, 12, 384, 1332, 108, 2520, 432, 84900, 20942000 
+
+
+LCM_test_data_A:	.word 1, 36, 360, 108, 28300
+LCM_test_data_B:	.word 12,54, 210, 144, 74000
+LCM_output:           .word 12, 108, 2520, 432, 20942000
+
+RANDOM_test_data_A:	.word 1, 144, 42, 260, 74000
+RANDOM_test_data_B:	.word 12, 108,  54, 210, 44000
+RANDOM_test_data_C:	.word 4, 109, 36, 360, 28300
+
+RANDOM_output:           .word 26, 720, 216, 3120, 21044400
+
+###############################################################################
+#                           Text Section
+.text
+# Utility function to print an array
+print_array:
+li $t1, 0
+move $t2, $a0
+print:
+
+lw $a0, ($t2)
+li $v0, 1   
+syscall
+
+li $v0, 4
+la $a0, space
+syscall
+
+addi $t2, $t2, 4
+addi $t1, $t1, 1
+blt $t1, $a1, print
+jr $ra
+###############################################################################
+###############################################################################
+#                           PART 1 (GCD)
+#a0: input number
+#a1: input number
+
+#v0: final gcd answer
+
+.globl gcd
+gcd:
+############################### Part 1: your code begins here ################
+	addi $sp, $sp, -4	# decrement stack pointer
+	sw $ra, 0($sp)		# save return address to stack
+
+	move $t0, $a0		# move input values to t registers(x)
+	move $t1, $a1		# y
+
+gcdLoop:
+	beq $t1, $zero, gcdEnd	# if y == 0, end program
+	div $t0, $t1		# else, x / y
+	mfhi $t2		# t2 = x % y
+	move $t0, $t1		# x = y
+	move $t1, $t2		# y = t2 
+	j gcdLoop		# recursion
+	
+gcdEnd:
+	move $v0, $t0		# move the gcd to result register
+
+	lw $ra, 0($sp)		# load return address from stack
+	addi $sp, $sp, 4	# restore stack pointer
+############################### Part 1: your code ends here  ##################
+jr $ra
+###############################################################################
+###############################################################################
+#                           PART 2 (LCM)
+
+# Find the least common multiplier of two numbers given
+# Make a call to the GCD function to compute the LCM
+# LCM = a1*a2 / GCD
+
+# Preserve all required values in stack before calls to another function.
+# preserve the $ra register value in stack before making the call!!!
+
+#a0: input number
+#a1: input number
+#v0: final gcd answer
+
+.globl lcm
+lcm:
+############################### Part 2: your code begins here ################
+	addi $sp, $sp, -4 	# decrement stack pointer
+	sw $ra, 0($sp)		# save return address to stack
+	
+	move $t0, $a0		# move input values to t registers (x)
+	move $t1, $a1		# y
+	
+	jal gcd			# gcd(x, y)
+	move $t1, $v0		# move gcd result to $t1
+
+	mul $t2, $a0, $a1	# t2 = x * y
+	div $t2, $t1		# divide t2 by gcd
+	mflo $v0		# move the quotient to v0
+
+	lw $ra, 0($sp)		# load return address from stack
+	addi $sp, $sp, 4	# restore stack pointer
+############################### Part 2: your code ends here  ##################
+jr $ra
+###############################################################################
+#                           PART 3 (Random SUM)
+
+# You are given three integers. You need to find the smallest 
+# one and the largest one.
+# 
+# Then find the GCD and LCM of the two numbers. 
+#
+# Return the sum of Smallest, largest, GCD and LCM
+#
+# Implementation details:
+# The three integers are stored in registers $a0, $a1, and $a2.
+# Store the answer into register $v0. 
+# Preserve all required values in stack before calls to another function.
+# preserve the $ra register value in stack before making the call!!!
+# Use stacks to store the smallest and largest values before making the function call. 
+
+.globl random_sum
+random_sum:
+############################### Part 3: your code begins here ################
+    addi $sp, $sp, -4      # decrement stack pointer
+    sw $ra, 0($sp)         # save return address to stack
+
+
+move $t0, $a0		   # move input values to t registers (x)
+move $t1, $a1		   # y
+move $t2, $a2		   # z
+	
+largest:
+bgt $t0, $t1, onelarge	 # if x > y, go imbedded if
+bgt $t1, $t2, twolarge	 # else if y > z go to imbedded if
+bgt $t2, $t0, threelarge # else if z > x go to imbedded if
+	
+onelarge:
+bgt $t0, $t2, onelarge1	 # if x > z go to imbedded if
+	
+threelarge:
+move $t4, $t2		 # set largest to z
+jal smallest
+	
+twolarge:
+move $t4, $t1		 # set largest to y
+jal smallest
+	
+onelarge1:
+move $t4, $t0 		 # set largest to x
+jal smallest
+	
+smallest:
+blt $t0, $t1, onesmall	 # if x < y, go imbedded if
+blt $t1, $t2, twosmall	 # else if y < z go to imbedded if
+blt $t2, $t0, threesmall # else if z < x go to imbedded if
+	
+onesmall:
+blt $t0, $t2, onesmall1	 # if x < z go to imbedded if
+	
+threesmall:
+move $t5, $t2		 # set smallest to z
+jal step2
+	
+twosmall:
+move $t5, $t1		 # set smallest to y
+jal step2
+	
+onesmall1:
+move $t5, $t0		 # set smallest to x
+jal step2
+step2:
+move $a0, $t4            # pass smallest as first argument
+move $a1, $t5            # pass largest as second argument
+jal gcd                  # call gcd function
+move $t6, $v0            # store gcd result in $t6
+
+
+move $a0, $t4            # pass smallest as first argument
+move $a1, $t5            # pass largest as second argument
+jal lcm                  # call lcm function
+move $t7, $v0            # store lcm result in $t7
+
+
+add $v0, $t4, $t5        # sum = smallest + largest
+add $v0, $v0, $t6        # sum += gcd
+add $v0, $v0, $t7        # sum += lcm
+
+
+lw $ra, 0($sp)          # load return address from stack
+addi $sp, $sp, 4        # restore stack pointer
+############################### Part 3: your code ends here  ##################
+jr $ra
+###############################################################################
+
+#                          Main Function 
+main:
+li $v0, 4
+la $a0, student_name
+syscall
+la $a0, new_line
+syscall  
+la $a0, student_id
+syscall 
+la $a0, new_line
+syscall
+la $a0, new_line
+syscall
+###############################################################################
+#                          TESTING PART 1 - GCD
+li $v0, 4
+la $a0, new_line
+syscall
+
+li $v0, 4
+la $a0, t1_str
+syscall
+
+li $v0, 4
+la $a0, eo_str
+syscall
+
+li $v0, 4
+la $a0, new_line
+syscall
+
+li $s0, 5 # num tests
+la $s2, GCD_output
+move $a0, $s2
+move $a1, $s0
+jal print_array
+
+li $v0, 4
+la $a0, new_line
+syscall
+
+
+li $v0, 4
+la $a0, po_str
+syscall
+
+li $v0, 4
+la $a0, new_line
+syscall
+
+
+#test_GCD:
+li $s0, 5 # num tests
+li $s1, 0
+la $s2, GCD_test_data_A
+la $s3, GCD_test_data_B
+#j skip_line
+##############################################
+test_gcd:
+#li $v0, 4
+#la $a0, new_line
+#syscall
+#skip_line:
+add $s4, $s2, $s1
+add $s5, $s3, $s1
+# Pass input parameter
+lw $a0, 0($s4)
+lw $a1, 0($s5)
+jal gcd
+
+move $a0, $v0
+li $v0,1
+syscall
+
+li $v0, 4
+la $a0, space
+syscall
+
+addi $s1, $s1, 4
+addi $s0, $s0, -1
+bgtz $s0, test_gcd
+
+###############################################################################
+
+#                          TESTING PART 2 - LCM
+li $v0, 4
+la $a0, new_line
+syscall
+
+li $v0, 4
+la $a0, new_line
+syscall
+
+li $v0, 4
+la $a0, t2_str
+syscall
+
+li $v0, 4
+la $a0, eo_str
+syscall
+
+li $v0, 4
+la $a0, new_line
+syscall
+
+li $s0, 5 # num tests
+la $s2, LCM_output
+move $a0, $s2
+move $a1, $s0
+jal print_array
+
+li $v0, 4
+la $a0, new_line
+syscall
+
+
+li $v0, 4
+la $a0, po_str
+syscall
+
+li $v0, 4
+la $a0, new_line
+syscall
+
+
+#test_GCD:
+li $s0, 5 # num tests
+li $s1, 0
+la $s2, LCM_test_data_A
+la $s3, LCM_test_data_B
+#j skip_line
+##############################################
+test_lcm:
+#li $v0, 4
+#la $a0, new_line
+#syscall
+#skip_line:
+add $s4, $s2, $s1
+add $s5, $s3, $s1
+# Pass input parameter
+lw $a0, 0($s4)
+lw $a1, 0($s5)
+jal lcm
+
+move $a0, $v0
+li $v0,1
+syscall
+
+li $v0, 4
+la $a0, space
+syscall
+
+addi $s1, $s1, 4
+addi $s0, $s0, -1
+bgtz $s0, test_lcm
+
+###############################################################################
+#                          TESTING PART 3 - RANDOM SUM
+li $v0, 4
+la $a0, new_line
+syscall
+
+li $v0, 4
+la $a0, new_line
+syscall
+
+li $v0, 4
+la $a0, t3_str
+syscall
+
+li $v0, 4
+la $a0, eo_str
+syscall
+
+li $v0, 4
+la $a0, new_line
+syscall
+
+li $s0, 5 # num tests
+la $s2, RANDOM_output
+move $a0, $s2
+move $a1, $s0
+jal print_array
+
+li $v0, 4
+la $a0, new_line
+syscall
+
+
+li $v0, 4
+la $a0, po_str
+syscall
+
+li $v0, 4
+la $a0, new_line
+syscall
+
+
+#test_GCD:
+li $s0, 5 # num tests
+li $s1, 0
+la $s2, RANDOM_test_data_A
+la $s3, RANDOM_test_data_B
+la $s4, RANDOM_test_data_C
+#j skip_line
+##############################################
+test_random:
+#li $v0, 4
+#la $a0, new_line
+#syscall
+#skip_line:
+add $s5, $s2, $s1
+add $s6, $s3, $s1
+add $s7, $s4, $s1
+# Pass input parameter
+lw $a0, 0($s5)
+lw $a1, 0($s6)
+lw $a2, 0($s7)
+jal random_sum
+
+move $a0, $v0
+li $v0,1
+syscall
+
+li $v0, 4
+la $a0, space
+syscall
+
+addi $s1, $s1, 4
+addi $s0, $s0, -1
+bgtz $s0, test_random
+
+###############################################################################
+
+_end:
+
+# new line
+li $v0, 4
+la $a0, new_line
+syscall
+
+# end program
+li $v0, 10
+syscall
+###############################################################################
