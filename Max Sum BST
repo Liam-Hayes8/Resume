@@ -1,0 +1,65 @@
+/**
+ * Definition for a binary tree node.
+ * struct TreeNode {
+ *     int val;
+ *     TreeNode *left;
+ *     TreeNode *right;
+ *     TreeNode() : val(0), left(nullptr), right(nullptr) {}
+ *     TreeNode(int x) : val(x), left(nullptr), right(nullptr) {}
+ *     TreeNode(int x, TreeNode *left, TreeNode *right) : val(x), left(left), right(right) {}
+ * };
+ */
+//Leetcode Problem 1373
+ 
+ //Struct to hold information about a subtree
+ struct Tree{
+    int min;
+    int max;
+    int sum;
+    bool bst = false;
+};
+
+class Solution {
+    public:
+        int maxSumBST(TreeNode* root) {
+            int tot = 0;
+            dfs(root, tot);
+            return tot;
+    }
+
+private:
+    Tree dfs(TreeNode* root, int& tot){
+
+        //Base Case
+        if(root == nullptr){
+            return Tree(INT_MAX, INT_MIN, 0, true);
+        }
+        
+        //Recursively get left and right subtree info
+        const Tree l = dfs(root->left, tot);
+        const Tree r = dfs(root->right, tot);
+
+        //Left or right subtrees aren't valid BST's
+        if(!l.bst || !r.bst){
+            return Tree();
+        }
+
+        //Check BST property relative to the left max and right min
+        if(root->val <= l.max || root->val >= r.min){
+            return Tree();
+        }
+
+        //Valid subtree
+        //Compute current subtree sum
+        const int currSum = root->val + l.sum + r.sum;
+
+        //Updating min and max for current subtrees
+         tot = max(tot, currSum);
+         int currMax = min(root->val, l.min);
+         int currMin = max(root->val, r.max);
+        
+
+        //Return all of the combined tree info
+        return Tree(currMax, currMin, currSum, true);
+    }
+};
