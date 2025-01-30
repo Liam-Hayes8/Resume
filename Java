@@ -1,0 +1,43 @@
+class Solution {
+    public int maxPerformance(int n, int[] speed, int[] efficiency, int k) {
+        final int CONST = 1_000_000_007;                  //Max Performance is 10^9 + 7
+        long totalSpeed = 0;
+        long maxPerformance = 0;
+
+        //Create array of pairs
+        Pair<Integer, Integer>[] descEf = new Pair[n];
+        for(int i = 0; i < n; i++){
+            descEf[i] = new Pair<>(efficiency[i], speed[i]);
+        }
+
+        //Sort pairs by efficiency in descending order
+        Arrays.sort(descEf, (x,y) -> y.getKey().compareTo(x.getKey()));
+
+        //Use a min-heap to keep track of the largest speeds seen so far, 
+        //removing the smallest if we exceed k
+        Queue<Integer> minHeap = new PriorityQueue<>();
+
+        //Evaluate performance as we iterate
+        for(Pair<Integer,Integer> x : descEf){
+            final int currEfficiency = x.getKey();
+            final int currSpeed = x.getValue();
+
+            //Add speed to minheap and remaining sum
+            minHeap.offer(currSpeed);
+            totalSpeed += currSpeed;
+
+            //If k is exceeded, remove the smallest
+            if(minHeap.size() > k){
+                totalSpeed -= minHeap.poll();
+            }
+            
+            //Calculate max performance
+            maxPerformance = Math.max(maxPerformance, totalSpeed * currEfficiency);
+        }
+
+        //Return max best performance with constraint
+        return (int) (maxPerformance % CONST);
+
+        
+    }
+}
