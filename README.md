@@ -23,18 +23,18 @@ LogicWorks: The “Gottcha Anti-Theft” Machine
   Highlights: Demonstrates knowledge of digital circuit design principles, combinational and sequential logic, and practical logic simulation.
 
 
-Languages & Technologies:
-C++
-Java
-MIPS Assembly
-LogicWorks
+Languages & Technologies:  
+C++  
+Java  
+MIPS Assembly  
+LogicWorks  
 (Any other relevant languages/technologies, e.g., Python, C, JavaScript, etc.)
 
 
-Interests / Focus:
-Systems programming
-Hardware-software integration
-Data structures and algorithms
+Interests / Focus:  
+Systems programming  
+Hardware-software integration  
+Data structures and algorithms  
 Circuit design
 
 
