@@ -38,6 +38,11 @@ Data structures and algorithms
 Circuit design
 
 
-Let’s Connect!
-Email: liam.hayes111@gmail.com
+Current Goals  
+Seeking internship opportunities (Summer 2025 / Fall 2025) in San Diego, Seattle, or San Jose  
+Interested in roles involving embedded systems, backend development, software engineering, computer architecture, or machine code.
+
+
+Let’s Connect!  
+Email: liam.hayes111@gmail.com  
 LinkedIn: www.linkedin.com/in/liam-hayes1
